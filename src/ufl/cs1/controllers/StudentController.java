@@ -6,14 +6,11 @@ import game.models.*;
 import game.view.GameView;
 import game.models.Actor;
 import game.models.Maze;
-
 import java.util.List;
 
 public final class StudentController implements DefenderController {
 
 	public void init(Game game) {
-
-
 /*
 		System.out.print(game.getCurMaze().getPowerPillNodes().get(0).getX()+ ", ");
 		System.out.println(game.getCurMaze().getPowerPillNodes().get(0).getY());
@@ -33,15 +30,19 @@ public final class StudentController implements DefenderController {
 		int[] actions = new int[Game.NUM_DEFENDER];
 
 		Actor MsPac = game.getAttacker();
+
 		Defender blinky = game.getDefender(0);		//red ghost
 		Defender pinky = game.getDefender(1);		//pink ghost
 		Defender inky = game.getDefender(2);		//orange ghost
 		Defender sue = game.getDefender (3);		//blue ghost
 		Attacker attacker = game.getAttacker();
 
+		List<Defender> inkysFriends = game.getDefenders();
+		inkysFriends.remove(2);
+
 		actions[0] = blinkyAlgorithim(game, MsPac, blinky);
 		actions[1] = pinkyAlgorithim(game, MsPac, pinky);
-		actions[2] = inkyAlgorithim(game, MsPac, inky);
+		actions[2] = inkyAlgorithim(game, MsPac, inky, inkysFriends);
 		actions[3] = sueAlgorithim(game, MsPac, sue);
 
 		//scatter(actions, blinky, pinky, inky, sue);
@@ -52,11 +53,12 @@ public final class StudentController implements DefenderController {
 		return actions;
 
 	}
+	//power pill ghost
 	public int blinkyAlgorithim(Game game, Actor MsPac,Defender blinky){
 		if (blinky.getPossibleDirs().size() != 0) {
 			if(game.getPowerPillList().size() != 0) {
 				if (!(blinky.isVulnerable())) {											//blinky is not vulnerable
-					if (blinky.getLocation().getPathDistance(MsPac.getLocation()) <=40){
+					if (blinky.getLocation().getPathDistance(MsPac.getLocation()) <= 40){
 						return blinky.getNextDir(MsPac.getLocation(),true);
 					} else
 						return blinky.getNextDir(blinky.getTargetNode(game.getPowerPillList(), true), true);
@@ -76,11 +78,35 @@ public final class StudentController implements DefenderController {
 				return pinky.getNextDir(MsPac.getLocation(), true);
 			} else
 				return pinky.getNextDir(MsPac.getLocation(), false);
-
 		}else
 			return -1;
 	}
 
+
+
+
+	public int inkyAlgorithim(Game game, Actor MsPac, Defender inky, List<Defender> inkysFriends) {
+		boolean sharedPath = false;
+		if(inky.getPossibleDirs().size() !=0) {
+			List <Node> pathToDestruction = inky.getPathTo(MsPac.getLocation());
+
+			for(int i = 0; i<inkysFriends.size();++i) {
+				for (int j = 0; j < pathToDestruction.size(); ++j) {
+					if (inkysFriends.get(i).getLocation() == pathToDestruction.get(j) )
+						sharedPath = true;
+				}
+			}
+			if(!(sharedPath)){
+
+			}
+
+		}else
+			return -1;
+		
+	}
+
+
+	/*
 	//orange ghost
 	public int inkyAlgorithim(Game game, Actor MsPac, Defender inky) {
 		Node nullFlag = null;
@@ -100,9 +126,8 @@ public final class StudentController implements DefenderController {
 
 		}else
 			return -1;
-
 	}
-
+*/
 	//
 	public int sueAlgorithim(Game game, Actor MsPac, Defender sue){
 
@@ -112,23 +137,18 @@ public final class StudentController implements DefenderController {
 					if (sue.getLocation().getPathDistance(MsPac.getLocation()) <=60)
 						return sue.getNextDir(MsPac.getLocation(),true);
 					else
-						return sue.getNextDir(sue.getTargetNode(game.getPillList(), true), true);
+					return sue.getNextDir(sue.getTargetNode(game.getPillList(), true), true);
 				}else
-					return -1;
-
+					return sue.getNextDir(MsPac.getLocation(),true);
 			}else
 				return sue.getNextDir(MsPac.getLocation(), false);
 
 		}else
 			return -1;
-
 	}
 
 
 }
-
-
-
 //System.out.println( MsPac.getLocation() );
 //System.out.print(ghost1.getLocation().getX()+", ");
 //System.out.println(ghost1.getLocation().getY());
