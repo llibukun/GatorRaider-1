@@ -86,23 +86,50 @@ public final class StudentController implements DefenderController {
 
 
 	public int inkyAlgorithim(Game game, Actor MsPac, Defender inky, List<Defender> inkysFriends) {
-		boolean sharedPath = false;
-		if(inky.getPossibleDirs().size() !=0) {
-			List <Node> pathToDestruction = inky.getPathTo(MsPac.getLocation());
+	// Inky is the pacman DoubleCrosser - It does the scatter function at a junction
+		int action = -1;
+	List<Integer> possibleDirs = inky.getPossibleDirs(); // Get valid ghost moves
 
-			for(int i = 0; i<inkysFriends.size();++i) {
-				for (int j = 0; j < pathToDestruction.size(); ++j) {
-					if (inkysFriends.get(i).getLocation() == pathToDestruction.get(j) )
-						sharedPath = true;
+	if (possibleDirs.size() != 0) { // If ghost is out of lair
+		if(!inky.isVulnerable()) { //If ghost is not vulnerable
+
+			// Chase pacman or double-cross pacman if possible
+			boolean ghostInPath = false;
+			// get the path to pacman
+			List<Node> pathToDevastator = inky.getPathTo(pacman.getLocation());
+			// Find the nearest node on the path
+			Node followDevastator = inky.getTargetNode(pathToDevastator, true);
+
+			// check if another ghost is in the same path leading to pacman
+			for (int i = 0; i < pathToDevastator.size(); i++) {
+				for (int j = 0; j < inkysFriends.size(); j++) {
+					if (inkysFriends.get(j).getLocation() == pathToDevastator.get(i) && !inkysFriends.get(j).isVulnerable()){
+						ghostInPath = true;
+						break;
+					}
 				}
 			}
-			if(!(sharedPath)){
 
+			// if ghost in the same path and inky is at a junction
+			if (ghostInPath && inky.getLocation().isJunction()){
+				List<Node> neighbors = inky.getPossibleLocations(); // excludes opposite direction
+				for (int j = 0; j < neighbors.size(); j++) {
+					if (neighbors.get(j) != followDevastator){
+						// take a different path
+						action = inky.getNextDir(neighbors.get(j), true);
+					}
+				}
+			} else {
+				//follow that path
+				action = inky.getNextDir(followDevastator, true);
 			}
 
-		}else
-			return -1;
-		
+		} else {
+			// Ghost is vulnerable - Run away from pacman
+			action = inky.getNextDir(pacman.getLocation(), false);
+		}
+	}
+		return action;	
 	}
 
 
